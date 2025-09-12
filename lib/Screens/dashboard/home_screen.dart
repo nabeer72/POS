@@ -1,8 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:pos/widgets/action_card.dart';
 import 'package:pos/widgets/transaction_card.dart';
-
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -38,7 +36,9 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'POS Dashboard',
-          style: TextStyle(fontSize: isLargeScreen ? 24 : screenWidth * 0.05, color: Colors.white),
+          style: TextStyle(
+              fontSize: isLargeScreen ? 24 : screenWidth * 0.05,
+              color: Colors.white),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -52,13 +52,17 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.notifications, color: Colors.white), onPressed: () {}),
+          IconButton(
+              icon: const Icon(Icons.notifications, color: Colors.white),
+              onPressed: () {}),
           Padding(
             padding: EdgeInsets.only(right: screenWidth * 0.04),
             child: CircleAvatar(
               radius: isLargeScreen ? 20 : screenWidth * 0.04,
               backgroundColor: Colors.white,
-              child: Icon(Icons.person, size: isLargeScreen ? 24 : screenWidth * 0.045, color: Colors.black),
+              child: Icon(Icons.person,
+                  size: isLargeScreen ? 24 : screenWidth * 0.045,
+                  color: Colors.black),
             ),
           ),
         ],
@@ -75,15 +79,19 @@ class DashboardScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSalesSummary(context, constraints.maxWidth, constraints.maxHeight),
+                  _buildSalesSummary(
+                      context, constraints.maxWidth, constraints.maxHeight),
                   SizedBox(height: constraints.maxHeight * 0.02),
                   _buildSearchBar(context, constraints.maxWidth),
                   SizedBox(height: constraints.maxHeight * 0.02),
-                  _buildTransactionsSection(context, constraints.maxWidth, constraints.maxHeight),
+                  _buildTransactionsSection(
+                      context, constraints.maxWidth, constraints.maxHeight),
                   SizedBox(height: constraints.maxHeight * 0.03),
-                  _buildCategoryFilter(context, constraints.maxWidth, constraints.maxHeight),
+                  _buildCategoryFilter(
+                      context, constraints.maxWidth, constraints.maxHeight),
                   SizedBox(height: constraints.maxHeight * 0.02),
-                  _buildQuickActionsSection(context, isTablet, isLargeScreen, constraints.maxWidth, constraints.maxHeight),
+                  _buildQuickActionsSection(context, isTablet, isLargeScreen,
+                      constraints.maxWidth, constraints.maxHeight),
                 ],
               ),
             );
@@ -93,7 +101,8 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSalesSummary(BuildContext context, double screenWidth, double screenHeight) {
+  Widget _buildSalesSummary(
+      BuildContext context, double screenWidth, double screenHeight) {
     return Card(
       child: Padding(
         padding: EdgeInsets.all(screenWidth * 0.04),
@@ -155,7 +164,8 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryFilter(BuildContext context, double screenWidth, double screenHeight) {
+  Widget _buildCategoryFilter(
+      BuildContext context, double screenWidth, double screenHeight) {
     final categories = ['All', 'Sales', 'Inventory', 'Reports', 'Settings'];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,17 +185,22 @@ class DashboardScreen extends StatelessWidget {
                 padding: EdgeInsets.only(right: screenWidth * 0.03),
                 child: Card(
                   elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   child: InkWell(
                     onTap: () {},
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         gradient: index == 0
                             ? const LinearGradient(
-                                colors: [Colors.purple, Colors.deepPurpleAccent],
+                                colors: [
+                                  Colors.purple,
+                                  Colors.deepPurpleAccent
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               )
@@ -213,10 +228,19 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActionsSection(
-      BuildContext context, bool isTablet, bool isLargeScreen, double screenWidth, double screenHeight) {
-    final cardSize = screenWidth * (isLargeScreen ? 0.22 : isTablet ? 0.28 : 0.3);
-    final crossAxisCount = isLargeScreen ? 4 : isTablet ? 3 : 3;
+  Widget _buildQuickActionsSection(BuildContext context, bool isTablet,
+      bool isLargeScreen, double screenWidth, double screenHeight) {
+    final cardSize = screenWidth *
+        (isLargeScreen
+            ? 0.22
+            : isTablet
+                ? 0.28
+                : 0.3);
+    final crossAxisCount = isLargeScreen
+        ? 4
+        : isTablet
+            ? 3
+            : 3;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -232,19 +256,45 @@ class DashboardScreen extends StatelessWidget {
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
           children: [
-            QuickActionCard(title: 'New Sale', icon: Icons.add_shopping_cart, color: Colors.indigo[600]!, cardSize: cardSize),
-            QuickActionCard(title: 'Inventory', icon: Icons.inventory, color: Colors.teal[400]!, cardSize: cardSize),
-            QuickActionCard(title: 'Reports', icon: Icons.bar_chart, color: Colors.purple[400]!, cardSize: cardSize),
-            QuickActionCard(title: 'Settings', icon: Icons.settings, color: Colors.deepOrange[400]!, cardSize: cardSize),
-            QuickActionCard(title: 'Customers', icon: Icons.group, color: Colors.blue[400]!, cardSize: cardSize),
-            QuickActionCard(title: 'Analytics', icon: Icons.analytics, color: Colors.green[400]!, cardSize: cardSize),
+            QuickActionCard(
+                title: 'New Sale',
+                icon: Icons.add_shopping_cart,
+                color: Colors.indigo[600]!,
+                cardSize: cardSize),
+                
+            QuickActionCard(
+                title: 'Inventory',
+                icon: Icons.inventory,
+                color: Colors.teal[400]!,
+                cardSize: cardSize),
+            QuickActionCard(
+                title: 'Reports',
+                icon: Icons.bar_chart,
+                color: Colors.purple[400]!,
+                cardSize: cardSize),
+            QuickActionCard(
+                title: 'Settings',
+                icon: Icons.settings,
+                color: Colors.deepOrange[400]!,
+                cardSize: cardSize),
+            QuickActionCard(
+                title: 'Customers',
+                icon: Icons.group,
+                color: Colors.blue[400]!,
+                cardSize: cardSize),
+            QuickActionCard(
+                title: 'Analytics',
+                icon: Icons.analytics,
+                color: Colors.green[400]!,
+                cardSize: cardSize),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildTransactionsSection(BuildContext context, double screenWidth, double screenHeight) {
+  Widget _buildTransactionsSection(
+      BuildContext context, double screenWidth, double screenHeight) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -257,9 +307,21 @@ class DashboardScreen extends StatelessWidget {
           height: screenHeight * 0.15,
           child: PageView(
             children: [
-              TransactionCard(orderId: 'Order #1234', amount: '\$150.00', status: 'Completed', screenWidth: screenWidth),
-              TransactionCard(orderId: 'Order #1235', amount: '\$89.50', status: 'Pending', screenWidth: screenWidth),
-              TransactionCard(orderId: 'Order #1236', amount: '\$200.00', status: 'Completed', screenWidth: screenWidth),
+              TransactionCard(
+                  orderId: 'Order #1234',
+                  amount: '\$150.00',
+                  status: 'Completed',
+                  screenWidth: screenWidth),
+              TransactionCard(
+                  orderId: 'Order #1235',
+                  amount: '\$89.50',
+                  status: 'Pending',
+                  screenWidth: screenWidth),
+              TransactionCard(
+                  orderId: 'Order #1236',
+                  amount: '\$200.00',
+                  status: 'Completed',
+                  screenWidth: screenWidth),
             ],
           ),
         ),
