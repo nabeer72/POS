@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pos/widgets/action_card.dart';
+import 'package:pos/widgets/search_bar.dart'; // Import SearchBarWidget
+import 'package:pos/widgets/custom_button.dart'; // Import CustomButton
+
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
 
@@ -154,7 +157,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Cancel'),
                 ),
-                ElevatedButton(
+                CustomButton(
+                  text: 'Add Item',
                   onPressed: () {
                     final name = nameController.text.trim();
                     final price = double.tryParse(priceController.text.trim());
@@ -184,10 +188,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     );
                     Get.back(); // Navigate back to DashboardScreen
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
-                  ),
-                  child: const Text('Add Item'),
                 ),
               ],
             );
@@ -213,29 +213,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    // ignore: unused_local_variable
     final screenHeight = MediaQuery.of(context).size.height;
+    // ignore: unused_local_variable
     final isTablet = screenWidth > 600;
     final isLargeScreen = screenWidth > 900;
-
-    final backgroundGradient = isLargeScreen
-        ? LinearGradient(
-            colors: [Colors.white, Colors.blueGrey[50]!],
-            stops: [0.0, 1.0],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
-        : isTablet
-            ? LinearGradient(
-                colors: [Colors.white, Colors.grey[50]!],
-                stops: [0.0, 1.0],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : LinearGradient(
-                colors: [Colors.white, Colors.white],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              );
 
     return Scaffold(
       appBar: AppBar(
@@ -243,23 +225,19 @@ class _InventoryScreenState extends State<InventoryScreen> {
           'Inventory',
           style: TextStyle(
             fontSize: isLargeScreen ? 24 : screenWidth * 0.05,
-            color: Colors.white,
+            color: Colors.black,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.purple, Colors.deepPurpleAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: Colors.deepOrangeAccent, // White background for the AppBar
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: Colors.black),
             onPressed: () {
               // Placeholder for refreshing inventory data
               ScaffoldMessenger.of(context).showSnackBar(
@@ -267,10 +245,20 @@ class _InventoryScreenState extends State<InventoryScreen> {
               );
             },
           ),
+          Padding(
+            padding: EdgeInsets.only(right: screenWidth * 0.04),
+            child: CircleAvatar(
+              radius: isLargeScreen ? 20 : screenWidth * 0.04,
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person,
+                  size: isLargeScreen ? 24 : screenWidth * 0.045,
+                  color: Colors.black),
+            ),
+          ),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(gradient: backgroundGradient),
+        color: Colors.grey[100], // Set Colors.grey[100] as the background
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
@@ -281,7 +269,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInventorySearch(context, constraints.maxWidth),
+                  // Search bar using SearchBarWidget
+                  SearchBarWidget(
+                    screenWidth: constraints.maxWidth,
+                    onSearchChanged: (value) {
+                      // Implement inventory search logic here
+                    },
+                  ),
                   SizedBox(height: constraints.maxHeight * 0.02),
                   _buildInventoryGrid(context, constraints.maxWidth),
                   SizedBox(height: constraints.maxHeight * 0.03),
@@ -294,19 +288,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildInventorySearch(BuildContext context, double screenWidth) {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: 'Search inventory items...',
-        prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-        border: const OutlineInputBorder(),
-      ),
-      onChanged: (value) {
-        // Implement inventory search logic here
-      },
     );
   }
 
@@ -353,25 +334,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   Widget _buildAddInventoryButton(BuildContext context, double screenWidth) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => _showAddItemDialog(context),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.purple,
-          padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          'Add to Inventory',
-          style: TextStyle(
-            fontSize: screenWidth * 0.04,
-            color: Colors.white,
-          ),
-        ),
-      ),
+    return CustomButton(
+      text: 'Add to Inventory',
+      onPressed: () => _showAddItemDialog(context),
     );
   }
 

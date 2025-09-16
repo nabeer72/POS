@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pos/widgets/action_card.dart'; // Import QuickActionCard
+import 'package:pos/widgets/search_bar.dart'; // Import SearchBarWidget
 
 class NewSaleScreen extends StatefulWidget {
   const NewSaleScreen({super.key});
@@ -96,44 +97,20 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
     final isTablet = screenWidth > 600;
     final isLargeScreen = screenWidth > 900;
 
-    final backgroundGradient = isLargeScreen
-        ? LinearGradient(
-            colors: [Colors.white, Colors.blueGrey[50]!],
-            stops: [0.0, 1.0],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
-        : isTablet
-            ? LinearGradient(
-                colors: [Colors.white, Colors.grey[50]!],
-                stops: [0.0, 1.0],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : LinearGradient(
-                colors: [Colors.white, Colors.white],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              );
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'New Sale',
           style: TextStyle(
             fontSize: isLargeScreen ? 24 : screenWidth * 0.05,
-            color: Colors.white,
+            color: Colors.black,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.purple, Colors.deepPurpleAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: Colors.deepOrangeAccent, // Green background for the AppBar
           ),
         ),
         actions: [
@@ -144,7 +121,7 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(gradient: backgroundGradient),
+        color: Colors.grey[100], // Set Colors.grey[100] as the background
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
@@ -155,7 +132,13 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildProductSearch(context, constraints.maxWidth),
+                  // Search bar at the top
+                  SearchBarWidget(
+                    screenWidth: constraints.maxWidth,
+                    onSearchChanged: (value) {
+                      // Implement product search logic here
+                    },
+                  ),
                   SizedBox(height: constraints.maxHeight * 0.02),
                   _buildProductGrid(
                       context, isTablet, isLargeScreen, constraints.maxWidth),
@@ -169,19 +152,6 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildProductSearch(BuildContext context, double screenWidth) {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: 'Search products...',
-        prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-        border: const OutlineInputBorder(),
-      ),
-      onChanged: (value) {
-        // Implement product search logic here
-      },
     );
   }
 
@@ -281,7 +251,7 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
                   style: TextStyle(
                     fontSize: screenWidth * 0.05,
                     fontWeight: FontWeight.bold,
-                    color: Colors.purple,
+                    color: Colors.black,
                   ),
                 ),
               ],
@@ -298,7 +268,7 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
       child: ElevatedButton(
         onPressed: _cartItems.isEmpty ? null : _processCheckout,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.purple,
+          backgroundColor: Colors.deepOrangeAccent,
           padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

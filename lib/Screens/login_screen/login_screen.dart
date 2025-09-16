@@ -4,6 +4,7 @@ import 'package:pos/Services/Controllers/login_controller.dart';
 import 'package:pos/widgets/custom_button.dart';
 import 'package:pos/widgets/custom_loader.dart';
 import 'package:pos/widgets/custom_textfield.dart';
+
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -17,7 +18,7 @@ class LoginScreen extends StatelessWidget {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.purple, Colors.deepPurpleAccent],
+            colors: [Color(0xFF1A237E), Color(0xFF455A64)], // Sober dark blue to gray gradient
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -37,7 +38,7 @@ class LoginScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.white, // White for strong contrast
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -46,7 +47,7 @@ class LoginScreen extends StatelessWidget {
                   'Sign in to continue',
                   style: TextStyle(
                     fontSize: 18,
-                    color: Colors.white70,
+                    color: Colors.white70, // Slightly muted white for subtitle
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -68,9 +69,7 @@ class LoginScreen extends StatelessWidget {
                     )),
                 SizedBox(height: screenHeight * 0.04),
                 Obx(() => loginController.isLoading.value
-                    ? const LoadingWidget(
-                      
-                      )
+                    ? const LoadingWidget()
                     : CustomButton(
                         text: 'Login',
                         onPressed: loginController.login,

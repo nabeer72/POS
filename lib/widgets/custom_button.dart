@@ -17,7 +17,7 @@ class CustomButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white, // Keep background white as requested
+        backgroundColor: Colors.deepOrangeAccent, // Keep background white as requested
         foregroundColor: Colors.deepPurple,
         padding: EdgeInsets.symmetric(
           horizontal: screenWidth * 0.05, // Full width with minimal padding
@@ -34,7 +34,7 @@ class CustomButton extends StatelessWidget {
         style: TextStyle(
           fontSize: screenWidth * 0.045,
           fontWeight: FontWeight.w600,
-          color: Colors.deepPurple,
+          color: Colors.black,
         ),
         textAlign: TextAlign.center,
       ),
