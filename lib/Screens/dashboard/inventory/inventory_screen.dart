@@ -10,7 +10,6 @@ class InventoryScreen extends StatefulWidget {
   @override
   State<InventoryScreen> createState() => _InventoryScreenState();
 }
-
 class _InventoryScreenState extends State<InventoryScreen> {
   // Sample inventory data
   final List<Map<String, dynamic>> _inventoryItems = [
