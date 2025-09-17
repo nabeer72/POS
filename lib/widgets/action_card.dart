@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pos/Screens/customers/customer_screen.dart';
 import 'package:pos/Screens/dashboard/inventory/inventory_screen.dart';
 import 'package:pos/Screens/newSales/new_sales_screen.dart';
 
@@ -52,7 +53,7 @@ class QuickActionCard extends StatelessWidget {
                     Get.toNamed('/settings');
                     break;
                   case 'Customers':
-                    Get.toNamed('/customers');
+                    Get.to(() => const AddCustomerScreen());
                     break;
                   case 'Analytics':
                     Get.toNamed('/analytics');
