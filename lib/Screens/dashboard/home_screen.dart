@@ -24,13 +24,15 @@ class DashboardScreen extends StatelessWidget {
           'POS Dashboard',
           style: TextStyle(
               fontSize: isLargeScreen ? 24 : screenWidth * 0.05,
-              color: Colors.black),
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
         ),
-        backgroundColor: Colors.transparent,
+        ),
+        backgroundColor: Colors.deepOrangeAccent,
         elevation: 0,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            color: Colors.deepOrangeAccent, // White background for the AppBar
+            color: Colors.white10, // White background for the AppBar
           ),
         ),
         actions: [

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/Get.dart';
 import 'package:pos/widgets/action_card.dart';
 import 'package:pos/widgets/search_bar.dart'; // Import SearchBarWidget
 import 'package:pos/widgets/custom_button.dart'; // Import CustomButton
+import 'package:mobile_scanner/mobile_scanner.dart'; // Import MobileScanner
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -10,6 +11,7 @@ class InventoryScreen extends StatefulWidget {
   @override
   State<InventoryScreen> createState() => _InventoryScreenState();
 }
+
 class _InventoryScreenState extends State<InventoryScreen> {
   // Sample inventory data
   final List<Map<String, dynamic>> _inventoryItems = [
@@ -70,6 +72,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
     String? selectedCategory;
     IconData selectedIcon = Icons.devices;
     Color selectedColor = Colors.indigo[600]!;
+    bool isScanningInDialog = false; // State for QR scanner in dialog
+    double scannerHeightInDialog = 150; // Default scanner height in dialog
 
     // Dynamically get unique non-null categories from _inventoryItems
     final categories = _inventoryItems
@@ -95,8 +99,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              backgroundColor: Colors.white, // Set dialog background to white
-              title: const Text('Add New Item'),
+              backgroundColor: Colors.white,
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Add New Item'),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.red, size: 30),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -148,14 +161,78 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         });
                       },
                     ),
+                    const SizedBox(height: 12),
+                    if (isScanningInDialog)
+                      GestureDetector(
+                        onVerticalDragUpdate: (details) {
+                          setDialogState(() {
+                            scannerHeightInDialog = (scannerHeightInDialog - details.delta.dy).clamp(100, 400);
+                          });
+                        },
+                        child: SizedBox(
+                          width: 280,
+                          height: scannerHeightInDialog,
+                          child: ColoredBox(
+                            color: Colors.black,
+                            child: Stack(
+                              children: [
+                                MobileScanner(
+                                  onDetect: (capture) {
+                                    final List<Barcode> barcodes = capture.barcodes;
+                                    for (final barcode in barcodes) {
+                                      final scannedValue = barcode.rawValue ?? 'Unknown';
+                                      setDialogState(() {
+                                        nameController.text = scannedValue; // Populate name field with scanned value
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Scanned: $scannedValue')),
+                                      );
+                                    }
+                                    setDialogState(() {
+                                      isScanningInDialog = false; // Close scanner after scan
+                                    });
+                                  },
+                                  fit: BoxFit.cover,
+                                ),
+                                _customScannerOverlay(),
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                    onPressed: () => setDialogState(() => isScanningInDialog = false),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 0,
+                                  left: 0,
+                                  right: 0,
+                                  child: Container(
+                                    color: Colors.white.withOpacity(0.3),
+                                    height: 20,
+                                    child: const Center(
+                                      child: Icon(Icons.drag_handle, color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                CustomButton(
+                  text: 'Scan QR Code',
+                  onPressed: () {
+                    setDialogState(() {
+                      isScanningInDialog = !isScanningInDialog;
+                    });
+                  },
                 ),
+                const SizedBox(height: 12), // Spacing between buttons
                 CustomButton(
                   text: 'Add Item',
                   onPressed: () {
@@ -207,6 +284,27 @@ class _InventoryScreenState extends State<InventoryScreen> {
         );
       }
     });
+  }
+
+  // Custom overlay for QR scan guide
+  Widget _customScannerOverlay() {
+    return IgnorePointer(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: const EdgeInsets.all(50),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.black54, // Semi-transparent to show camera
+          ),
+        ),
+      ),
+    );
   }
 
   @override

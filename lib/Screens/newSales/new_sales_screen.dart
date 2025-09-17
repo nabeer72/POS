@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:pos/Services/Controllers/new_sales_controller.dart';
 import 'package:pos/widgets/action_card.dart'; // Import QuickActionCard
 import 'package:pos/widgets/search_bar.dart'; // Import SearchBarWidget
+import 'package:mobile_scanner/mobile_scanner.dart'; // Import MobileScanner
 
 class NewSaleScreen extends StatefulWidget {
   const NewSaleScreen({super.key});
@@ -10,90 +12,122 @@ class NewSaleScreen extends StatefulWidget {
 }
 
 class _NewSaleScreenState extends State<NewSaleScreen> {
-  final List<Map<String, dynamic>> _cartItems = [];
-  double _totalAmount = 0.0;
+  late NewSaleController _controller;
+  double _scannerHeight = 150; // Default small height for QR scanner
 
-  // Sample product data
-  final List<Map<String, dynamic>> _products = [
-    {
-      'name': 'Product A',
-      'price': 29.99,
-      'category': 'Electronics',
-      'icon': Icons.devices,
-      'color': Colors.indigo[600]!
-    },
-    {
-      'name': 'Product B',
-      'price': 19.99,
-      'category': 'Clothing',
-      'icon': Icons.checkroom,
-      'color': Colors.teal[400]!
-    },
-    {
-      'name': 'Product C',
-      'price': 49.99,
-      'category': 'Electronics',
-      'icon': Icons.devices,
-      'color': Colors.purple[400]!
-    },
-    {
-      'name': 'Product D',
-      'price': 9.99,
-      'category': 'Accessories',
-      'icon': Icons.watch,
-      'color': Colors.deepOrange[400]!
-    },
-    {
-      'name': 'Product E',
-      'price': 39.99,
-      'category': 'Clothing',
-      'icon': Icons.checkroom,
-      'color': Colors.blue[400]!
-    },
-    {
-      'name': 'Product F',
-      'price': 24.99,
-      'category': 'Accessories',
-      'icon': Icons.watch,
-      'color': Colors.green[400]!
-    },
-  ];
-
-  void _addToCart(Map<String, dynamic> product) {
-    setState(() {
-      _cartItems.add({...product, 'quantity': 1});
-      _totalAmount += product['price'];
-    });
+  @override
+  void initState() {
+    super.initState();
+    _controller = NewSaleController(context);
   }
 
-  void _updateQuantity(int index, int change) {
-    setState(() {
-      final newQuantity = (_cartItems[index]['quantity'] as int) + change;
-      if (newQuantity > 0) {
-        _totalAmount += change * _cartItems[index]['price'];
-        _cartItems[index]['quantity'] = newQuantity;
-      } else {
-        _totalAmount -= _cartItems[index]['price'] * _cartItems[index]['quantity'];
-        _cartItems.removeAt(index);
-      }
-    });
+  @override
+  void dispose() {
+    // mobile_scanner doesn't require explicit controller disposal
+    super.dispose();
   }
 
-  void _processCheckout() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Checkout processed successfully!')),
+  Widget _buildMainContent(BuildContext context, BoxConstraints constraints) {
+    final screenWidth = constraints.maxWidth;
+    // ignore: unused_local_variable
+    final screenHeight = constraints.maxHeight;
+    final isTablet = screenWidth > 600;
+    final isLargeScreen = screenWidth > 900;
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+        horizontal: constraints.maxWidth * 0.05,
+        vertical: constraints.maxHeight * 0.02,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SearchBarWidget(
+            screenWidth: constraints.maxWidth,
+            onSearchChanged: (value) {
+              // Implement product search logic here
+            },
+          ),
+          SizedBox(height: constraints.maxHeight * 0.02),
+          // QR Scanner placed below SearchBar
+          if (_controller.isScanning)
+            GestureDetector(
+              onVerticalDragUpdate: (details) {
+                setState(() {
+                  _scannerHeight = (_scannerHeight - details.delta.dy).clamp(100, 400);
+                });
+              },
+              child: Container(
+                height: _scannerHeight,
+                color: Colors.black,
+                child: Stack(
+                  children: [
+                    MobileScanner(
+                      onDetect: _controller.qrScannerService.handleScanResult,
+                      fit: BoxFit.cover,
+                    ),
+                    CustomScannerOverlay(),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                        onPressed: () => setState(() => _controller.setIsScanning(false)),
+                      ),
+                    ),
+                    // Drag handle for resizing
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        color: Colors.white.withOpacity(0.3),
+                        height: 20,
+                        child: const Center(
+                          child: Icon(Icons.drag_handle, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => setState(() => _controller.setIsScanning(true)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrangeAccent,
+                  padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Open QR Scanner',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          SizedBox(height: constraints.maxHeight * 0.02),
+          _buildProductGrid(context, isTablet, isLargeScreen, constraints.maxWidth),
+          SizedBox(height: constraints.maxHeight * 0.03),
+          _buildCartSummary(context, constraints.maxWidth, constraints.maxHeight),
+          SizedBox(height: constraints.maxHeight * 0.02),
+          _buildCheckoutButton(context, constraints.maxWidth),
+        ],
+      ),
     );
-    setState(() {
-      _cartItems.clear();
-      _totalAmount = 0.0;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     // ignore: unused_local_variable
-    final screenHeight = MediaQuery.of(context).size.height;
     final isTablet = screenWidth > 600;
     final isLargeScreen = screenWidth > 900;
 
@@ -104,52 +138,48 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
           style: TextStyle(
             fontSize: isLargeScreen ? 24 : screenWidth * 0.05,
             color: Colors.black,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.deepOrangeAccent,
         elevation: 0,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            color: Colors.deepOrangeAccent, // Green background for the AppBar
+            color: Colors.white10,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history, color: Colors.white),
+            icon: const Icon(Icons.history, color: Colors.black),
             onPressed: () {},
           ),
         ],
       ),
       body: Container(
-        color: Colors.grey[100], // Set Colors.grey[100] as the background
+        color: Colors.grey[100],
         child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: constraints.maxWidth * 0.05,
-                vertical: constraints.maxHeight * 0.02,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Search bar at the top
-                  SearchBarWidget(
-                    screenWidth: constraints.maxWidth,
-                    onSearchChanged: (value) {
-                      // Implement product search logic here
-                    },
-                  ),
-                  SizedBox(height: constraints.maxHeight * 0.02),
-                  _buildProductGrid(
-                      context, isTablet, isLargeScreen, constraints.maxWidth),
-                  SizedBox(height: constraints.maxHeight * 0.03),
-                  _buildCartSummary(context, constraints.maxWidth, constraints.maxHeight),
-                  SizedBox(height: constraints.maxHeight * 0.02),
-                  _buildCheckoutButton(context, constraints.maxWidth),
-                ],
-              ),
-            );
-          },
+          builder: (context, constraints) => _buildMainContent(context, constraints),
+        ),
+      ),
+    );
+  }
+
+  // Custom overlay for QR scan guide
+  Widget CustomScannerOverlay() {
+    return IgnorePointer(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: const EdgeInsets.all(50),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.black54, // Semi-transparent to show camera
+          ),
         ),
       ),
     );
@@ -157,7 +187,7 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
 
   Widget _buildProductGrid(
       BuildContext context, bool isTablet, bool isLargeScreen, double screenWidth) {
-    final cardSize = screenWidth * 0.28; // Adjusted for 3 cards per row
+    final cardSize = screenWidth * 0.28;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,21 +201,21 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // Fixed to 3 cards per row
+            crossAxisCount: 3,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
             childAspectRatio: 0.75,
           ),
-          itemCount: _products.length,
+          itemCount: _controller.products.length,
           itemBuilder: (context, index) {
-            final product = _products[index];
+            final product = _controller.products[index];
             return QuickActionCard(
               title: product['name'],
-              price: product['price'], // Pass price as double
+              price: product['price'],
               icon: product['icon'],
               color: product['color'],
               cardSize: cardSize,
-              onTap: () => _addToCart(product),
+              onTap: () => _controller.addToCart(product),
             );
           },
         ),
@@ -207,13 +237,13 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: _cartItems.isEmpty ? 50 : screenHeight * 0.2,
-              child: _cartItems.isEmpty
+              height: _controller.cartItems.isEmpty ? 50 : screenHeight * 0.2,
+              child: _controller.cartItems.isEmpty
                   ? const Center(child: Text('Cart is empty'))
                   : ListView.builder(
-                      itemCount: _cartItems.length,
+                      itemCount: _controller.cartItems.length,
                       itemBuilder: (context, index) {
-                        final item = _cartItems[index];
+                        final item = _controller.cartItems[index];
                         return ListTile(
                           title: Text(item['name']),
                           subtitle: Text('\$${item['price'].toStringAsFixed(2)}'),
@@ -222,12 +252,12 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.remove),
-                                onPressed: () => _updateQuantity(index, -1),
+                                onPressed: () => setState(() => _controller.updateQuantity(index, -1)),
                               ),
                               Text('${item['quantity']}'),
                               IconButton(
                                 icon: const Icon(Icons.add),
-                                onPressed: () => _updateQuantity(index, 1),
+                                onPressed: () => setState(() => _controller.updateQuantity(index, 1)),
                               ),
                             ],
                           ),
@@ -247,7 +277,7 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
                   ),
                 ),
                 Text(
-                  '\$${_totalAmount.toStringAsFixed(2)}',
+                  '\$${_controller.totalAmount.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: screenWidth * 0.05,
                     fontWeight: FontWeight.bold,
@@ -266,7 +296,7 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _cartItems.isEmpty ? null : _processCheckout,
+        onPressed: _controller.cartItems.isEmpty ? null : () => _controller.processCheckout(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.deepOrangeAccent,
           padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
