@@ -125,7 +125,7 @@ class NewSaleController {
     }
   }
 
-  void processCheckout(BuildContext context) {
+  void processCheckout(BuildContext context, String? selectedCustomer) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Checkout processed successfully!')),
     );

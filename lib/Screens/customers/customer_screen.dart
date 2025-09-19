@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pos/Services/Controllers/add_customer_controller.dart';
-import 'package:pos/widgets/custom_textfield.dart'; // Import CustomTextField
+import 'package:pos/widgets/customer_form.dart'; // Import the new form widget
 
 class AddCustomerScreen extends StatefulWidget {
   const AddCustomerScreen({super.key});
@@ -11,25 +11,11 @@ class AddCustomerScreen extends StatefulWidget {
 
 class _AddCustomerScreenState extends State<AddCustomerScreen> {
   late CustomerController _controller;
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _cellNumberController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  CustomerType _selectedType = CustomerType.regular;
 
   @override
   void initState() {
     super.initState();
     _controller = CustomerController();
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _addressController.dispose();
-    _cellNumberController.dispose();
-    _emailController.dispose();
-    super.dispose();
   }
 
   @override
@@ -39,6 +25,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.deepOrangeAccent,
         title: Text(
           'Add Customer',
           style: TextStyle(
@@ -46,7 +33,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             color: Colors.black,
           ),
         ),
-        backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -65,104 +51,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Customer Form
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(screenWidth * 0.04),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Add New Customer',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        controller: _nameController,
-                        hintText: 'Customer Name',
-                        icon: Icons.person,
-                        keyboardType: TextInputType.name,
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        controller: _addressController,
-                        hintText: 'Address',
-                        icon: Icons.location_on,
-                        keyboardType: TextInputType.streetAddress,
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        controller: _cellNumberController,
-                        hintText: 'Cell Number',
-                        icon: Icons.phone,
-                        keyboardType: TextInputType.phone,
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        controller: _emailController,
-                        hintText: 'Email',
-                        icon: Icons.email,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<CustomerType>(
-                        value: _selectedType,
-                        decoration: const InputDecoration(
-                          labelText: 'Customer Type',
-                          border: OutlineInputBorder(),
-                          filled: true,
-                          fillColor: Colors.white, // Match CustomTextField for consistency
-                        ),
-                        items: CustomerType.values.map((type) {
-                          return DropdownMenuItem(
-                            value: type,
-                            child: Text(type.toString().split('.').last),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedType = value!;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _controller.addCustomer(
-                              context,
-                              _nameController.text,
-                              _addressController.text,
-                              _cellNumberController.text,
-                              _emailController.text,
-                              _selectedType,
-                            );
-                            setState(() {
-                              _nameController.clear();
-                              _addressController.clear();
-                              _cellNumberController.clear();
-                              _emailController.clear();
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepOrangeAccent,
-                            padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Add Customer',
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.04,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              AddCustomerForm(
+                controller: _controller,
+                onCustomerAdded: () {
+                  setState(() {}); // Refresh the customer list
+                },
               ),
               const SizedBox(height: 24),
               // Customer List
@@ -197,6 +90,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                               icon: Icon(
                                 customer.isActive ? Icons.toggle_on : Icons.toggle_off,
                                 color: customer.isActive ? Colors.green : Colors.grey,
+                                size: 40,
                               ),
                               onPressed: () {
                                 setState(() {

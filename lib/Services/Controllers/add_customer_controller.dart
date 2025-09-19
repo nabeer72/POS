@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum CustomerType { regular, walkIn }
+enum CustomerType { regular, vip, wholesale }
 
 class Customer {
   final String name;
@@ -8,7 +8,7 @@ class Customer {
   final String? cellNumber;
   final String? email;
   final CustomerType type;
-  bool isActive; // Non-nullable bool
+  bool isActive;
 
   Customer({
     required this.name,
@@ -16,44 +16,33 @@ class Customer {
     this.cellNumber,
     this.email,
     required this.type,
-    this.isActive = true, // Default to true, ensuring non-null
+    this.isActive = true,
   });
 }
 
 class CustomerController {
-  final List<Customer> _customers = [];
-
-  List<Customer> get customers => _customers;
+  List<Customer> customers = [];
 
   void addCustomer(
     BuildContext context,
     String name,
-    String? address,
-    String? cellNumber,
-    String? email,
+    String address,
+    String cellNumber,
+    String email,
     CustomerType type,
   ) {
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Customer name cannot be empty')),
-      );
-      return;
-    }
-    _customers.add(Customer(
+    customers.add(Customer(
       name: name,
-      address: address != null && address.isEmpty ? null : address,
-      cellNumber: cellNumber != null && cellNumber.isEmpty ? null : cellNumber,
-      email: email != null && email.isEmpty ? null : email,
+      address: address.isEmpty ? null : address,
+      cellNumber: cellNumber.isEmpty ? null : cellNumber,
+      email: email.isEmpty ? null : email,
       type: type,
-      isActive: true, // Explicitly non-nullable
     ));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Added ${type.toString().split('.').last} customer: $name')),
-    );
   }
 
   void toggleCustomerStatus(int index) {
-    // No null check needed since isActive is non-nullable
-    _customers[index].isActive = !_customers[index].isActive;
+    if (index >= 0 && index < customers.length) {
+      customers[index].isActive = !customers[index].isActive;
+    }
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:pos/Services/Controllers/add_customer_controller.dart';
 import 'package:pos/Services/Controllers/new_sales_controller.dart';
-import 'package:pos/widgets/action_card.dart'; // Import QuickActionCard
-import 'package:pos/widgets/search_bar.dart'; // Import SearchBarWidget
-import 'package:mobile_scanner/mobile_scanner.dart'; // Import MobileScanner
+import 'package:pos/widgets/action_card.dart';
+import 'package:pos/widgets/customer_form.dart';
+import 'package:pos/widgets/search_bar.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 class NewSaleScreen extends StatefulWidget {
   const NewSaleScreen({super.key});
@@ -13,19 +15,164 @@ class NewSaleScreen extends StatefulWidget {
 
 class _NewSaleScreenState extends State<NewSaleScreen> {
   late NewSaleController _controller;
-  double _scannerHeight = 150; // Default small height for QR scanner
+  late CustomerController _customerController;
+  double _scannerHeight = 150;
 
   @override
   void initState() {
     super.initState();
     _controller = NewSaleController(context);
+    _customerController = CustomerController();
   }
 
   @override
   void dispose() {
-    // mobile_scanner doesn't require explicit controller disposal
     super.dispose();
   }
+
+  // Popup for adding a new customer via FAB
+  void _showAddCustomerDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Add Customer'),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.red),
+                onPressed: () => Navigator.of(dialogContext).pop(),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.95, // Increased width
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: SingleChildScrollView(
+              child: AddCustomerForm(
+                controller: _customerController,
+                onCustomerAdded: () {
+                  setState(() {}); // Refresh main screen
+                  Navigator.of(dialogContext).pop(); // Close dialog after adding
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+void _showCustomerSelectionDialog(BuildContext context) {
+  String? selectedCustomer;
+  // Dummy customer data
+  final List<Map<String, String>> _dummyCustomers = [
+    {'name': 'John Doe'},
+    {'name': 'Jane Smith'},
+    {'name': 'Alex Johnson'},
+    {'name': 'Emily Brown'},
+  ];
+
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter dialogSetState) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            titlePadding: const EdgeInsets.only(left: 24, top: 24, right: 8, bottom: 0),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Select Customer'),
+                IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.red,
+                  ),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      value: selectedCustomer,
+                      decoration: InputDecoration(
+                        labelText: 'Select Customer',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[400]!, width: 1),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[400]!, width: 1),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[600]!, width: 1.5),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      items: _dummyCustomers
+                          .map((customer) => DropdownMenuItem(
+                                value: customer['name'],
+                                child: Text(customer['name']!),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        dialogSetState(() {
+                          selectedCustomer = value;
+                        });
+                      },
+                      hint: _dummyCustomers.isEmpty
+                          ? const Text('No customers available')
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: selectedCustomer != null
+                    ? () {
+                        // Assuming _controller.processCheckout is defined elsewhere
+                        _controller.processCheckout(context, selectedCustomer);
+                        Navigator.of(dialogContext).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Checkout processed for $selectedCustomer'),
+                          ),
+                        );
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrangeAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Proceed',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 
   Widget _buildMainContent(BuildContext context, BoxConstraints constraints) {
     final screenWidth = constraints.maxWidth;
@@ -49,7 +196,6 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
             },
           ),
           SizedBox(height: constraints.maxHeight * 0.02),
-          // QR Scanner placed below SearchBar
           if (_controller.isScanning)
             GestureDetector(
               onVerticalDragUpdate: (details) {
@@ -75,7 +221,6 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
                         onPressed: () => setState(() => _controller.setIsScanning(false)),
                       ),
                     ),
-                    // Drag handle for resizing
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -161,10 +306,14 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
           builder: (context, constraints) => _buildMainContent(context, constraints),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddCustomerDialog(context),
+        backgroundColor: Colors.deepOrangeAccent,
+        child: const Icon(Icons.person_add, color: Colors.white),
+      ),
     );
   }
 
-  // Custom overlay for QR scan guide
   Widget CustomScannerOverlay() {
     return IgnorePointer(
       child: Container(
@@ -178,7 +327,7 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
           child: Container(
             width: double.infinity,
             height: double.infinity,
-            color: Colors.black54, // Semi-transparent to show camera
+            color: Colors.black54,
           ),
         ),
       ),
@@ -215,7 +364,12 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
               icon: product['icon'],
               color: product['color'],
               cardSize: cardSize,
-              onTap: () => _controller.addToCart(product),
+              onTap: () {
+                setState(() {
+                  _controller.addToCart(product);
+                });
+              
+              },
             );
           },
         ),
@@ -296,7 +450,9 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _controller.cartItems.isEmpty ? null : () => _controller.processCheckout(context),
+        onPressed: _controller.cartItems.isEmpty
+            ? null
+            : () => _showCustomerSelectionDialog(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.deepOrangeAccent,
           padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
