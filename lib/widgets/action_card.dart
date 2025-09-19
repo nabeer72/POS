@@ -6,7 +6,7 @@ import 'package:pos/Screens/newSales/new_sales_screen.dart';
 
 class QuickActionCard extends StatelessWidget {
   final String title;
-  final double? price; // Changed to double? to match product prices
+  final num? price; // Changed to num? to handle num from salesData
   final IconData icon;
   final Color color;
   final double cardSize;
@@ -22,6 +22,15 @@ class QuickActionCard extends StatelessWidget {
     this.onTap,
   });
 
+  static final Map<String, Function()> _navigationMap = {
+    'New Sale': () => Get.to(() => const NewSaleScreen()),
+    'Inventory': () => Get.to(() => const InventoryScreen()),
+    'Reports': () => Get.toNamed('/reports'),
+    'Settings': () => Get.toNamed('/settings'),
+    'Customers': () => Get.to(() => const AddCustomerScreen()),
+    'Analytics': () => Get.toNamed('/analytics'),
+  };
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -29,60 +38,54 @@ class QuickActionCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: Color(0xFFB3E5FC).withOpacity(0.4), // Light blue border
+            color: const Color(0xFFB3E5FC).withOpacity(0.4),
             width: 1,
           ),
           borderRadius: BorderRadius.circular(12),
-          color: Colors.white, // White background for the card
+          color: Colors.white,
         ),
         child: InkWell(
           onTap: onTap ??
               () {
-                // Default navigation logic if onTap is not provided
-                switch (title) {
-                  case 'New Sale':
-                    Get.to(() => const NewSaleScreen());
-                    break;
-                  case 'Inventory':
-                    Get.to(InventoryScreen());
-                    break;
-                  case 'Reports':
-                    Get.toNamed('/reports');
-                    break;
-                  case 'Settings':
-                    Get.toNamed('/settings');
-                    break;
-                  case 'Customers':
-                    Get.to(() => const AddCustomerScreen());
-                    break;
-                  case 'Analytics':
-                    Get.toNamed('/analytics');
-                    break;
+                final navigationAction = _navigationMap[title];
+                if (navigationAction != null) {
+                  navigationAction();
+                } else {
+                  Get.snackbar('Error', 'No route defined for $title');
                 }
               },
           borderRadius: BorderRadius.circular(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: cardSize * 0.3, color: color), // Use provided color for icon
+              Icon(
+                icon,
+                size: cardSize * 0.3,
+                color: color,
+              ),
               const SizedBox(height: 8),
               Text(
                 title,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium!
-                    .copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ) ??
+                    const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                 textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
               ),
               if (price != null) ...[
                 const SizedBox(height: 4),
                 Text(
-                  '\$${price!.toStringAsFixed(2)}',
+                  '\$${price!.toDouble().toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: cardSize * 0.1,
                     color: Colors.grey[600],
                   ),
                   textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ],

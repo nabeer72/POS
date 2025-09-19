@@ -16,7 +16,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
     // SalesScreen(),
     // InventoryScreen(),
     // ReportsScreen(),
-    // FavoritesScreen(),
+    // FavoriteScreen(),
     // ProfileScreen(),
   ];
 

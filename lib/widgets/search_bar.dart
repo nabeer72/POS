@@ -12,23 +12,27 @@ class SearchBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: 'Search transactions or customers...',
-        prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+    return Container(
+      width: screenWidth,
+      constraints: const BoxConstraints(maxWidth: 600),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: 'Search transactions or customers...',
+          prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey[400]!),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.blueAccent),
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey[400]!),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.blueAccent),
-          borderRadius: BorderRadius.circular(12),
-        ),
+        onChanged: (value) => onSearchChanged?.call(value),
       ),
-      onChanged: onSearchChanged,
     );
   }
 }
