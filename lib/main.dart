@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pos/Screens/Loader/loader.dart';
+import 'package:pos/Services/Controllers/favourites_screen_controller.dart';
 
 // Constants for styling
 const _primaryColor = Color(0xFF1A237E);
 const _cardColor = Colors.white;
 
 void main() {
+    Get.put(FavoritesController());
   runApp(const MyApp());
 }
 

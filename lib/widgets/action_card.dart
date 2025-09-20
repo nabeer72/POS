@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:pos/Screens/customers/customer_screen.dart';
-import 'package:pos/Screens/dashboard/inventory/inventory_screen.dart';
-import 'package:pos/Screens/newSales/new_sales_screen.dart';
 
 class QuickActionCard extends StatelessWidget {
   final String title;
-  final num? price; // Changed to num? to handle num from salesData
+  final num? price;
   final IconData icon;
   final Color color;
   final double cardSize;
   final Function()? onTap;
+  final bool showFavorite; // ❤️ sirf FavoritesScreen me show hoga
+  final bool isFavorite;
+  final VoidCallback? onFavoriteToggle;
 
   const QuickActionCard({
     super.key,
@@ -20,16 +19,10 @@ class QuickActionCard extends StatelessWidget {
     required this.color,
     required this.cardSize,
     this.onTap,
+    this.showFavorite = false,
+    this.isFavorite = false,
+    this.onFavoriteToggle,
   });
-
-  static final Map<String, Function()> _navigationMap = {
-    'New Sale': () => Get.to(() => const NewSaleScreen()),
-    'Inventory': () => Get.to(() => const InventoryScreen()),
-    'Reports': () => Get.toNamed('/reports'),
-    'Settings': () => Get.toNamed('/settings'),
-    'Customers': () => Get.to(() => const AddCustomerScreen()),
-    'Analytics': () => Get.toNamed('/analytics'),
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -45,49 +38,57 @@ class QuickActionCard extends StatelessWidget {
           color: Colors.white,
         ),
         child: InkWell(
-          onTap: onTap ??
-              () {
-                final navigationAction = _navigationMap[title];
-                if (navigationAction != null) {
-                  navigationAction();
-                } else {
-                  Get.snackbar('Error', 'No route defined for $title');
-                }
-              },
+          onTap: showFavorite ? onFavoriteToggle : onTap, // ✅ FavoritesScreen → toggle
           borderRadius: BorderRadius.circular(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
             children: [
-              Icon(
-                icon,
-                size: cardSize * 0.3,
-                color: color,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ) ??
-                    const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      icon,
+                      size: cardSize * 0.35,
+                      color: color,
                     ),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (price != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  '\$${price!.toDouble().toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontSize: cardSize * 0.1,
-                    color: Colors.grey[600],
-                  ),
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 8),
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ) ??
+                          const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (price != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '\$${price!.toDouble().toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: cardSize * 0.1,
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
                 ),
-              ],
+              ),
+              if (showFavorite) // ✅ Sirf FavoritesScreen me show hoga
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : Colors.grey,
+                    size: cardSize * 0.19,
+                  ),
+                ),
             ],
           ),
         ),
