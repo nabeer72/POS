@@ -4,7 +4,6 @@ import 'package:pos/widgets/customer_form.dart'; // Import the new form widget
 
 class AddCustomerScreen extends StatefulWidget {
   const AddCustomerScreen({super.key});
-
   @override
   State<AddCustomerScreen> createState() => _AddCustomerScreenState();
 }
