@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pos/Screens/dashboard/home_screen.dart';
 import 'package:pos/Screens/favourite/favourites_screen.dart';
+import 'package:pos/Screens/profile/profile_screen.dart';
+import 'package:pos/Screens/report/report_screen.dart';
 
 class BottomNavigation extends StatefulWidget {
   @override
@@ -13,25 +15,10 @@ class _BottomNavigationState extends State<BottomNavigation> {
   // List of screens to navigate between
   final List<Widget> _screens = [
     DashboardScreen(),
-    // Replace with your actual ReportsScreen()
-    Scaffold(
-      body: Center(
-        child: Text(
-          "Reports Screen Placeholder",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ),
-    ),
+    ReportScreen(),
     FavoritesScreen(),
+    ProfileScreen(),
     // Replace with your actual ProfileScreen()
-    Scaffold(
-      body: Center(
-        child: Text(
-          "Profile Screen Placeholder",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ),
-    ),
   ];
 
   void _onItemTapped(int index) {
