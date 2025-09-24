@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Added for SystemChrome
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:pos/Services/Controllers/report_controller.dart';
-import 'dart:math' show max; // Added for reduce(max)
+import 'package:pos/widgets/sales_card.dart'; // Import SalesAndTransactionsWidget
+import 'dart:math' show max;
 
 class ReportScreen extends StatelessWidget {
   const ReportScreen({super.key});
@@ -18,8 +19,8 @@ class ReportScreen extends StatelessWidget {
     );
 
     final ReportController controller = Get.put(ReportController());
-
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     // ignore: unused_local_variable
     final isTablet = screenWidth > 600;
     final isLargeScreen = screenWidth > 900;
@@ -64,7 +65,14 @@ class ReportScreen extends StatelessWidget {
                   children: [
                     _buildPeriodSelector(controller, screenWidth),
                     SizedBox(height: (constraints.maxHeight * 0.02).toDouble()),
-                    _buildSummaryCards(controller, screenWidth),
+                    SalesAndTransactionsWidget(
+                      screenWidth: screenWidth,
+                      screenHeight: screenHeight,
+                      salesData: {
+                        'amount': controller.summary['totalAmount'] ?? 0.0,
+                        'transactionCount': controller.summary['totalCount'] ?? 0,
+                      },
+                    ),
                     SizedBox(height: (constraints.maxHeight * 0.02).toDouble()),
                     _buildSalesChart(controller, constraints.maxWidth, constraints.maxHeight),
                   ],
@@ -112,48 +120,6 @@ class ReportScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryCards(ReportController controller, double screenWidth) {
-    final summary = controller.summary;
-    final cardSize = (screenWidth * 0.4).clamp(120.0, 180.0);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildSummaryCard(
-          'Total Sales',
-          '\$${summary['totalAmount']?.toStringAsFixed(2) ?? '0.00'}',
-          Icons.trending_up,
-          cardSize,
-        ),
-        _buildSummaryCard(
-          'Transactions',
-          '${summary['totalCount'] ?? 0}',
-          Icons.receipt,
-          cardSize,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSummaryCard(String title, String value, IconData icon, double size) {
-    return Container(
-      width: size,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 4)],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.deepOrangeAccent, size: 32),
-          const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          Text(title, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSalesChart(ReportController controller, double screenWidth, double screenHeight) {
     final data = controller.salesData;
     if (data.isEmpty) {
@@ -169,10 +135,9 @@ class ReportScreen extends StatelessWidget {
       );
     }
 
-    // Calculate maxY safely
-    double maxY = 1000.0; // Fallback value
+    double maxY = 1000.0;
     if (data.isNotEmpty) {
-      maxY = (data.map((d) => (d['amount'] as num?)?.toDouble() ?? 0.0).reduce(max) * 1.1);
+      maxY = (data.map((d) => (d['amount'] as num?)?.toDouble() ?? 0.0).reduce(max) * 1.2);
     }
 
     return Container(
@@ -195,20 +160,36 @@ class ReportScreen extends StatelessWidget {
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
                 maxY: maxY,
-                barTouchData: BarTouchData(enabled: true),
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    tooltipRoundedRadius: 8,
+                    getTooltipColor: (_) => Colors.deepOrangeAccent.withOpacity(0.8),
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final item = data[groupIndex];
+                      return BarTooltipItem(
+                        '\$${rod.toY.toStringAsFixed(2)}\n${item['date']}',
+                        const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      );
+                    },
+                  ),
+                ),
                 titlesData: FlTitlesData(
                   show: true,
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
+                      reservedSize: 40,
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
                         if (index >= 0 && index < data.length) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
+                          return SideTitleWidget(
+                            meta: meta, // Required parameter
+                            angle: 45 * 3.14159 / 180, // Rotate 45 degrees
+                            space: 8.0,
                             child: Text(
                               data[index]['date']?.toString() ?? '',
-                              style: const TextStyle(fontSize: 12),
+                              style: const TextStyle(fontSize: 12, color: Colors.black87),
                             ),
                           );
                         }
@@ -217,10 +198,26 @@ class ReportScreen extends StatelessWidget {
                     ),
                   ),
                   leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) => Text(
+                        '\$${value.toInt()}',
+                        style: const TextStyle(fontSize: 12, color: Colors.black87),
+                      ),
+                    ),
                   ),
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: maxY / 5,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Colors.grey.shade200,
+                    strokeWidth: 1,
+                  ),
                 ),
                 borderData: FlBorderData(show: false),
                 barGroups: data.asMap().entries.map((entry) {
@@ -231,14 +228,28 @@ class ReportScreen extends StatelessWidget {
                     barRods: [
                       BarChartRodData(
                         toY: (item['amount'] as num?)?.toDouble() ?? 0.0,
-                        color: Colors.deepOrangeAccent,
-                        width: 16,
-                        borderRadius: BorderRadius.circular(4),
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.deepOrangeAccent,
+                            Colors.orangeAccent.shade100,
+                          ],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                        ),
+                        width: (screenWidth / data.length / 2).clamp(10.0, 20.0),
+                        borderRadius: BorderRadius.circular(6),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: maxY,
+                          color: Colors.grey.shade100,
+                        ),
                       ),
                     ],
                   );
                 }).toList(),
               ),
+              swapAnimationDuration: const Duration(milliseconds: 500),
+              swapAnimationCurve: Curves.easeInOut,
             ),
           ),
         ],
